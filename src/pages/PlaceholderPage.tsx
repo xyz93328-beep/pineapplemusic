@@ -4,9 +4,9 @@ interface PlaceholderPageProps {
 
 export function PlaceholderPage({ title }: PlaceholderPageProps) {
   return (
-    <section className="pt-6">
+    <div className="flex flex-col gap-2 pb-32 pt-8">
       <h1 className="text-large-title font-bold text-label">{title}</h1>
-      <p className="mt-2 text-body text-label-secondary">This section is built in a later stage.</p>
-    </section>
+      <p className="text-body text-label-secondary">Coming soon.</p>
+    </div>
   );
 }

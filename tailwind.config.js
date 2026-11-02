@@ -56,9 +56,19 @@ export default {
           '0%': { backgroundPosition: '200% 0' },
           '100%': { backgroundPosition: '-200% 0' },
         },
+        equalizer: {
+          '0%, 100%': { height: '4px' },
+          '50%': { height: '14px' },
+        },
+        'gradient-shift': {
+          '0%, 100%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+        },
       },
       animation: {
         shimmer: 'shimmer 1.6s linear infinite',
+        equalizer: 'equalizer 0.8s ease-in-out infinite',
+        'gradient-shift': 'gradient-shift 8s ease infinite',
       },
     },
   },

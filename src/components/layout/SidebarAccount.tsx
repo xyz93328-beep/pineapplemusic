@@ -1,48 +1,43 @@
+import { LogOut, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut } from 'lucide-react';
-import { Artwork, firstImageUrl } from '@/components/common/Artwork';
+import { useApiKeyStore } from '@/store/apiKeyStore';
 import { IconButton } from '@/components/common/IconButton';
-import { Skeleton } from '@/components/common/Skeleton';
-import { useAsync } from '@/hooks/useAsync';
 import { cn } from '@/lib/cn';
-import { fetchCurrentUser } from '@/services/spotify/api';
-import { useAuthStore } from '@/store/authStore';
 
-interface SidebarAccountProps {
-  collapsed: boolean;
-}
-
-export function SidebarAccount({ collapsed }: SidebarAccountProps) {
-  const setSession = useAuthStore((s) => s.setSession);
+export function SidebarAccount({ collapsed }: { collapsed: boolean }) {
+  const { apiKey, clearApiKey } = useApiKeyStore();
   const navigate = useNavigate();
-  const { state } = useAsync((signal) => fetchCurrentUser(signal), []);
+  const hasEnvKey = Boolean(import.meta.env.VITE_YT_API_KEY);
 
-  function signOut() {
-    setSession(null);
-    navigate('/login', { replace: true });
+  // If the key is purely from the environment (public deployment), don't
+  // show any account row at all — there's nothing for the user to manage.
+  if (hasEnvKey && !apiKey) return null;
+
+  // User has a personal persisted key — let them remove it.
+  function handleClear() {
+    clearApiKey();
+    if (!import.meta.env.VITE_YT_API_KEY) {
+      navigate('/login', { replace: true });
+    }
   }
 
-  const name = state.status === 'success' ? (state.data.display_name ?? 'Spotify user') : 'Signed in';
-  const avatar = state.status === 'success' ? firstImageUrl(state.data.images) : undefined;
-
   return (
-    <div
-      className={cn(
-        'flex items-center gap-3 border-t border-separator px-4 py-3',
-        collapsed && 'flex-col px-2',
-      )}
-    >
-      <Artwork src={avatar} alt={name} shape="circle" className="h-8 w-8 shrink-0" />
+    <div className={cn(
+      'flex items-center gap-3 border-t border-separator px-4 py-3',
+      collapsed && 'flex-col px-2',
+    )}>
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-raised text-label-secondary">
+        <Settings size={14} aria-hidden />
+      </div>
       {!collapsed && (
         <div className="min-w-0 flex-1">
-          {state.status === 'loading' ? (
-            <Skeleton className="h-3 w-24" />
-          ) : (
-            <p className="truncate text-body font-medium text-label">{name}</p>
-          )}
+          <p className="text-caption font-medium text-label">API Key</p>
+          <p className="truncate text-caption text-label-secondary">
+            {apiKey ? `•••${apiKey.slice(-6)}` : 'From environment'}
+          </p>
         </div>
       )}
-      <IconButton label="Sign out" onClick={signOut}>
+      <IconButton label="Remove API key" onClick={handleClear}>
         <LogOut size={16} strokeWidth={2} aria-hidden />
       </IconButton>
     </div>

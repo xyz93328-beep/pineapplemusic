@@ -1,64 +1,37 @@
+// Playlists sidebar section — YouTube doesn't expose a user library without
+// OAuth, so we keep a "Recently Played" list from the player store instead.
 import { NavLink } from 'react-router-dom';
-import { Artwork, firstImageUrl } from '@/components/common/Artwork';
-import { Skeleton } from '@/components/common/Skeleton';
-import { useAsync } from '@/hooks/useAsync';
+import { Artwork } from '@/components/common/Artwork';
+import { usePlayerStore } from '@/store/playerStore';
 import { cn } from '@/lib/cn';
-import { fetchUserPlaylists } from '@/services/spotify/api';
 
 export function SidebarPlaylists() {
-  const { state, retry } = useAsync((signal) => fetchUserPlaylists(signal), []);
+  const queue = usePlayerStore((s) => s.queue);
+  const currentTrack = usePlayerStore((s) => s.currentTrack);
+
+  // Show unique tracks from queue as a "Queue" shortcut — only when something is playing
+  if (!currentTrack) return null;
 
   return (
     <div className="mt-5">
-      <h2 className="px-3 pb-2 text-caption font-medium text-label-secondary">Playlists</h2>
-
-      {state.status === 'loading' && (
-        <div aria-hidden className="flex flex-col gap-3 px-3 py-1">
-          {Array.from({ length: 5 }, (_, index) => (
-            <div key={index} className="flex items-center gap-3">
-              <Skeleton className="h-8 w-8 shrink-0" />
-              <Skeleton className="h-3 flex-1" />
-            </div>
-          ))}
-        </div>
-      )}
-
-      {state.status === 'error' && (
-        <div className="px-3 text-caption text-label-secondary">
-          <p>{state.message}</p>
+      <h2 className="px-3 pb-2 text-caption font-medium text-label-secondary">Now Playing</h2>
+      <nav aria-label="Queue tracks" className="flex flex-col gap-0.5">
+        {queue.slice(0, 10).map((track, i) => (
           <button
-            type="button"
-            onClick={retry}
-            className="mt-1 font-medium text-accent-text underline-offset-2 hover:underline"
+            key={`${track.id}-${i}`}
+            onClick={() => usePlayerStore.getState().playQueue(queue, i)}
+            className={cn(
+              'flex items-center gap-3 rounded-[10px] px-3 py-1.5 text-left text-body transition-colors duration-150',
+              currentTrack?.id === track.id
+                ? 'bg-label/[0.08] text-accent-text'
+                : 'text-label hover:bg-label/[0.05]',
+            )}
           >
-            Try again
+            <Artwork src={track.thumbnailUrl} alt="" className="h-8 w-8 shrink-0 rounded-[6px]" />
+            <span className="truncate text-track">{track.title}</span>
           </button>
-        </div>
-      )}
-
-      {state.status === 'success' && state.data.length === 0 && (
-        <p className="px-3 text-caption text-label-secondary">No playlists yet.</p>
-      )}
-
-      {state.status === 'success' && state.data.length > 0 && (
-        <nav aria-label="Playlists" className="flex flex-col gap-0.5">
-          {state.data.map((playlist) => (
-            <NavLink
-              key={playlist.id}
-              to={`/playlists/${playlist.id}`}
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center gap-3 rounded-[10px] px-3 py-1.5 text-body transition-[background-color,color,transform] duration-200 ease-out active:scale-[0.96]',
-                  isActive ? 'bg-label/[0.08] text-accent-text' : 'text-label hover:bg-label/[0.05]',
-                )
-              }
-            >
-              <Artwork src={firstImageUrl(playlist.images)} alt="" className="h-8 w-8 shrink-0 rounded-[6px]" />
-              <span className="truncate">{playlist.name}</span>
-            </NavLink>
-          ))}
-        </nav>
-      )}
+        ))}
+      </nav>
     </div>
   );
 }

@@ -1,211 +1,126 @@
 import { Link } from 'react-router-dom';
 import { Music } from 'lucide-react';
-import { Artwork, firstImageUrl } from '@/components/common/Artwork';
+import { Artwork } from '@/components/common/Artwork';
 import { MediaCard } from '@/components/media/MediaCard';
-import { formatDuration } from '@/lib/format';
-import type { SearchResults, SpotifyArtistRef, SpotifyTrack } from '@/services/spotify/types';
+import { EqualizerBars } from '@/components/common/EqualizerBars';
+import { usePlayerStore } from '@/store/playerStore';
+import { cn } from '@/lib/cn';
+import type { SearchResults, Track } from '@/services/youtube/types';
 
-interface SearchResultsViewProps {
+interface Props {
   query: string;
   results: SearchResults;
 }
 
-interface TopResult {
-  kind: string;
-  title: string;
-  subtitle: string;
-  artwork: string | undefined;
-  shape: 'square' | 'circle';
-  to?: string;
-}
+function TrackRow({ track, index, allTracks }: { track: Track; index: number; allTracks: Track[] }) {
+  const currentTrack = usePlayerStore((s) => s.currentTrack);
+  const isPlaying = usePlayerStore((s) => s.isPlaying);
+  const playQueue = usePlayerStore((s) => s.playQueue);
+  const isActive = currentTrack?.id === track.id;
 
-function joinArtists(artists: SpotifyArtistRef[]): string {
-  return artists.map((artist) => artist.name).join(', ');
-}
-
-function pickTopResult(query: string, results: SearchResults): TopResult | null {
-  const exactArtist = results.artists.find(
-    (artist) => artist.name.toLowerCase() === query.toLowerCase(),
-  );
-  if (exactArtist) {
-    return {
-      kind: 'Artist',
-      title: exactArtist.name,
-      subtitle: 'Artist',
-      artwork: firstImageUrl(exactArtist.images),
-      shape: 'circle',
-    };
-  }
-
-  const track = results.tracks[0];
-  if (track) {
-    return {
-      kind: 'Song',
-      title: track.name,
-      subtitle: joinArtists(track.artists),
-      artwork: firstImageUrl(track.album.images),
-      shape: 'square',
-    };
-  }
-
-  const album = results.albums[0];
-  if (album) {
-    return {
-      kind: 'Album',
-      title: album.name,
-      subtitle: joinArtists(album.artists),
-      artwork: firstImageUrl(album.images),
-      shape: 'square',
-      to: `/albums/${album.id}`,
-    };
-  }
-
-  const playlist = results.playlists[0];
-  if (playlist) {
-    return {
-      kind: 'Playlist',
-      title: playlist.name,
-      subtitle: playlist.owner.display_name ?? 'Playlist',
-      artwork: firstImageUrl(playlist.images),
-      shape: 'square',
-      to: `/playlists/${playlist.id}`,
-    };
-  }
-
-  return null;
-}
-
-function TrackRow({ track }: { track: SpotifyTrack }) {
   return (
-    <li className="flex items-center gap-3 rounded-[10px] px-3 py-2 transition-colors duration-200 ease-out hover:bg-label/[0.05]">
-      <Artwork src={firstImageUrl(track.album.images)} alt={track.album.name} className="h-10 w-10 shrink-0" />
-      <div className="min-w-0 flex-1">
-        <p className="flex min-w-0 items-center gap-2 text-track font-medium text-label">
-          <span className="truncate">{track.name}</span>
-          {track.explicit && (
-            <span
-              aria-label="Explicit"
-              className="inline-flex h-4 shrink-0 items-center rounded-[3px] bg-label/[0.15] px-1 text-[10px] font-bold text-label-secondary"
-            >
-              E
-            </span>
-          )}
-        </p>
-        <p className="truncate text-caption text-label-secondary">{joinArtists(track.artists)}</p>
+    <li
+      onDoubleClick={() => playQueue(allTracks, index)}
+      className={cn(
+        'group flex cursor-default select-none items-center gap-3 rounded-[10px] px-3 py-2',
+        'transition-colors duration-150 hover:bg-label/[0.05]',
+        isActive && 'bg-accent/10',
+      )}
+    >
+      <div className="relative h-10 w-10 shrink-0">
+        <Artwork src={track.thumbnailUrl} alt={track.title} className="h-full w-full rounded-art" />
+        {isActive ? (
+          <div className="absolute inset-0 flex items-center justify-center rounded-art bg-black/40">
+            <EqualizerBars playing={isPlaying} />
+          </div>
+        ) : (
+          <button
+            aria-label={`Play ${track.title}`}
+            onClick={() => playQueue(allTracks, index)}
+            className="absolute inset-0 flex items-center justify-center rounded-art bg-black/50 text-white opacity-0 transition-opacity group-hover:opacity-100"
+          >▶</button>
+        )}
       </div>
-      <span className="shrink-0 text-track tabular-nums text-label-secondary">
-        {formatDuration(track.duration_ms)}
-      </span>
+      <div className="min-w-0 flex-1">
+        <p className={cn('truncate text-track font-medium', isActive ? 'text-accent' : 'text-label')}>
+          {track.title}
+        </p>
+        <p className="truncate text-caption text-label-secondary">
+          <Link to={`/artists/${track.artistId}`} onClick={(e) => e.stopPropagation()} className="hover:underline hover:text-label">
+            {track.artist}
+          </Link>
+        </p>
+      </div>
+      <span className="shrink-0 tabular-nums text-caption text-label-secondary">{track.durationLabel}</span>
     </li>
   );
 }
 
-function SectionHeading({ children }: { children: string }) {
-  return <h2 className="mb-4 text-section font-bold text-label">{children}</h2>;
-}
-
-function TopResultCard({ result }: { result: TopResult }) {
-  return (
-    <div className="flex items-center gap-6 rounded-panel bg-surface-elevated p-6">
-      <Artwork
-        src={result.artwork}
-        alt={result.title}
-        shape={result.shape}
-        className="h-28 w-28 shrink-0 md:h-36 md:w-36"
-      />
-      <div className="min-w-0">
-        <p className="text-caption font-medium text-label-secondary">{result.kind}</p>
-        <p className="mt-1 truncate text-title font-bold text-label">{result.title}</p>
-        <p className="mt-1 truncate text-body text-label-secondary">{result.subtitle}</p>
-        {result.to && (
-          <Link
-            to={result.to}
-            className="mt-4 inline-flex h-9 items-center rounded-pill bg-accent px-5 text-body font-bold text-white transition-[background-color,transform] duration-200 ease-out hover:bg-accent-hover active:scale-[0.96]"
-          >
-            Open
-          </Link>
-        )}
-      </div>
-    </div>
-  );
-}
-
-export function SearchResultsView({ query, results }: SearchResultsViewProps) {
-  const topResult = pickTopResult(query, results);
-  const total =
-    results.tracks.length + results.albums.length + results.artists.length + results.playlists.length;
+export function SearchResultsView({ query, results }: Props) {
+  const total = results.tracks.length + results.artists.length + results.playlists.length;
 
   if (total === 0) {
     return (
-      <div role="status" className="flex flex-col items-center gap-3 py-16 text-center">
+      <div className="flex flex-col items-center gap-3 py-16 text-center">
         <Music size={32} className="text-label-secondary" aria-hidden />
-        <p className="text-section font-bold text-label">No results for &ldquo;{query}&rdquo;</p>
-        <p className="text-body text-label-secondary">Try a different song, artist, album, or playlist.</p>
+        <p className="text-section font-bold text-label">No results for "{query}"</p>
+        <p className="text-body text-label-secondary">Try a different search term.</p>
       </div>
     );
   }
 
   return (
     <div className="flex flex-col gap-10">
-      {topResult && <TopResultCard result={topResult} />}
+      {/* Top result */}
+      {results.tracks[0] && (
+        <section>
+          <h2 className="mb-4 text-section font-bold text-label">Top Result</h2>
+          <div className="flex items-center gap-5 rounded-panel bg-surface-elevated p-5">
+            <Artwork src={results.tracks[0].thumbnailUrl} alt={results.tracks[0].title} className="h-24 w-24 shrink-0 rounded-art-lg" />
+            <div className="min-w-0">
+              <p className="text-caption text-label-secondary">Song</p>
+              <p className="mt-1 truncate text-title font-bold text-label">{results.tracks[0].title}</p>
+              <p className="truncate text-body text-label-secondary">{results.tracks[0].artist}</p>
+              <button
+                onClick={() => usePlayerStore.getState().playQueue(results.tracks, 0)}
+                className="mt-3 flex h-9 items-center gap-2 rounded-pill bg-accent px-4 text-body font-bold text-white hover:bg-accent-hover active:scale-[0.96]"
+              >▶ Play</button>
+            </div>
+          </div>
+        </section>
+      )}
 
+      {/* Songs */}
       {results.tracks.length > 0 && (
         <section>
-          <SectionHeading>Songs</SectionHeading>
+          <h2 className="mb-3 text-section font-bold text-label">Songs</h2>
           <ol className="flex flex-col gap-1">
-            {results.tracks.map((track) => (
-              <TrackRow key={track.id} track={track} />
+            {results.tracks.map((t, i) => (
+              <TrackRow key={t.id} track={t} index={i} allTracks={results.tracks} />
             ))}
           </ol>
         </section>
       )}
 
-      {results.albums.length > 0 && (
-        <section>
-          <SectionHeading>Albums</SectionHeading>
-          <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
-            {results.albums.map((album) => (
-              <MediaCard
-                key={album.id}
-                to={`/albums/${album.id}`}
-                artwork={firstImageUrl(album.images)}
-                title={album.name}
-                subtitle={`${album.release_date.slice(0, 4)} - ${joinArtists(album.artists)}`}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
+      {/* Artists */}
       {results.artists.length > 0 && (
         <section>
-          <SectionHeading>Artists</SectionHeading>
-          <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
-            {results.artists.map((artist) => (
-              <MediaCard
-                key={artist.id}
-                artwork={firstImageUrl(artist.images)}
-                title={artist.name}
-                subtitle="Artist"
-                shape="circle"
-              />
+          <h2 className="mb-3 text-section font-bold text-label">Artists</h2>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+            {results.artists.map((a) => (
+              <MediaCard key={a.id} to={`/artists/${a.id}`} artwork={a.thumbnailUrl} title={a.name} subtitle="Artist" shape="circle" />
             ))}
           </div>
         </section>
       )}
 
+      {/* Playlists */}
       {results.playlists.length > 0 && (
         <section>
-          <SectionHeading>Playlists</SectionHeading>
-          <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
-            {results.playlists.map((playlist) => (
-              <MediaCard
-                key={playlist.id}
-                to={`/playlists/${playlist.id}`}
-                artwork={firstImageUrl(playlist.images)}
-                title={playlist.name}
-                subtitle={playlist.owner.display_name ?? 'Playlist'}
-              />
+          <h2 className="mb-3 text-section font-bold text-label">Playlists</h2>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+            {results.playlists.map((p) => (
+              <MediaCard key={p.id} to={`/playlists/${p.id}`} artwork={p.thumbnailUrl} title={p.title} subtitle={p.channelTitle} />
             ))}
           </div>
         </section>

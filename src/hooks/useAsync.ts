@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { describeError } from '@/services/spotify/client';
+import { describeError } from '@/services/youtube/client';
 
 type AsyncState<T> =
   | { status: 'loading' }

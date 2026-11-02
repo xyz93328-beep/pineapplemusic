@@ -1,16 +1,18 @@
 import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuthStore } from '@/store/authStore';
+import { isConfigured } from '@/store/apiKeyStore';
 
-interface RequireAuthProps {
-  children: ReactNode;
-}
-
-export function RequireAuth({ children }: RequireAuthProps) {
-  const session = useAuthStore((s) => s.session);
+/**
+ * Guards the app shell. When VITE_YT_API_KEY is set in the environment
+ * (the normal public deployment case), isConfigured() is always true and
+ * this component is effectively transparent — users never see a login screen.
+ *
+ * If no env key is present (local dev without .env), users are sent to /login
+ * where they can paste their own key once.
+ */
+export function RequireAuth({ children }: { children: ReactNode }) {
   const location = useLocation();
-
-  if (!session) {
+  if (!isConfigured()) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
   return <>{children}</>;

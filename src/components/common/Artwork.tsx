@@ -1,16 +1,11 @@
 import { Music } from 'lucide-react';
 import { cn } from '@/lib/cn';
-import type { SpotifyImage } from '@/services/spotify/types';
 
 interface ArtworkProps {
-  src: string | undefined;
+  src: string | undefined | null;
   alt: string;
   shape?: 'square' | 'circle';
   className?: string;
-}
-
-export function firstImageUrl(images: SpotifyImage[] | undefined): string | undefined {
-  return images?.[0]?.url;
 }
 
 export function Artwork({ src, alt, shape = 'square', className }: ArtworkProps) {

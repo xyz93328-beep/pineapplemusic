@@ -1,38 +1,49 @@
-import { NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Artwork } from '@/components/common/Artwork';
 import { cn } from '@/lib/cn';
 
 interface MediaCardProps {
   to?: string;
-  artwork: string | undefined;
+  artwork: string | undefined | null;
   title: string;
   subtitle?: string;
   shape?: 'square' | 'circle';
+  onClick?: () => void;
 }
 
-export function MediaCard({ to, artwork, title, subtitle, shape = 'square' }: MediaCardProps) {
-  const body = (
+export function MediaCard({ to, artwork, title, subtitle, shape = 'square', onClick }: MediaCardProps) {
+  const content = (
     <>
       <Artwork
         src={artwork}
         alt={title}
         shape={shape}
-        className="w-full transition-transform duration-200 ease-out group-hover:scale-[1.02]"
+        className={cn('w-full', shape === 'circle' ? 'rounded-full' : 'rounded-art')}
       />
-      <div className={cn('mt-3 min-w-0', shape === 'circle' && 'text-center')}>
-        <p className="truncate text-track font-medium text-label">{title}</p>
+      <div className="mt-2 min-w-0">
+        <p className="truncate text-track font-semibold text-label">{title}</p>
         {subtitle && <p className="truncate text-caption text-label-secondary">{subtitle}</p>}
       </div>
     </>
   );
 
-  if (!to) {
-    return <div className="group min-w-0">{body}</div>;
+  const cls = 'group flex flex-col transition-transform duration-200 ease-out hover:scale-[1.03] active:scale-[0.97]';
+
+  if (to) {
+    return (
+      <Link to={to} className={cls} onClick={onClick}>
+        {content}
+      </Link>
+    );
   }
 
-  return (
-    <NavLink to={to} className="group block min-w-0 rounded-art outline-none">
-      {body}
-    </NavLink>
-  );
+  if (onClick) {
+    return (
+      <button className={cn(cls, 'text-left')} onClick={onClick}>
+        {content}
+      </button>
+    );
+  }
+
+  return <div className={cls}>{content}</div>;
 }

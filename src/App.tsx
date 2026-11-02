@@ -3,10 +3,11 @@ import { AppShell } from '@/components/layout/AppShell';
 import { RequireAuth } from '@/components/auth/RequireAuth';
 import { useApplyTheme } from '@/hooks/useApplyTheme';
 import { BrowsePage } from '@/pages/BrowsePage';
-import { CallbackPage } from '@/pages/CallbackPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
 import { SearchPage } from '@/pages/SearchPage';
+import { PlaylistPage } from '@/pages/PlaylistPage';
+import { ArtistPage } from '@/pages/ArtistPage';
 
 function App() {
   useApplyTheme();
@@ -14,7 +15,6 @@ function App() {
   return (
     <Routes>
       <Route path="login" element={<LoginPage />} />
-      <Route path="callback" element={<CallbackPage />} />
       <Route
         element={
           <RequireAuth>
@@ -31,8 +31,8 @@ function App() {
         <Route path="library/albums" element={<PlaceholderPage title="Albums" />} />
         <Route path="library/songs" element={<PlaceholderPage title="Songs" />} />
         <Route path="library/made-for-you" element={<PlaceholderPage title="Made for You" />} />
-        <Route path="albums/:id" element={<PlaceholderPage title="Album" />} />
-        <Route path="playlists/:id" element={<PlaceholderPage title="Playlist" />} />
+        <Route path="playlists/:id" element={<PlaylistPage />} />
+        <Route path="artists/:id" element={<ArtistPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
