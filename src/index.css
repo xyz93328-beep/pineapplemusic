@@ -35,12 +35,25 @@
 @layer base {
   html {
     background-color: rgb(var(--surface));
+    /* prevent iOS bounce scroll on the root */
+    overscroll-behavior: none;
   }
 
   body {
     @apply bg-surface font-sans text-label antialiased;
     -webkit-font-smoothing: antialiased;
     letter-spacing: -0.01em;
+    /* kill the grey flash on tap (iOS/Android) */
+    -webkit-tap-highlight-color: transparent;
+    /* prevent text selection during swipes */
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* re-enable text selection inside inputs and content */
+  input, textarea, [contenteditable] {
+    -webkit-user-select: text;
+    user-select: text;
   }
 
   :focus-visible {
@@ -50,6 +63,27 @@
 
   ::selection {
     background: rgba(250, 36, 60, 0.3);
+  }
+
+  /* make range inputs look consistent on mobile */
+  input[type='range'] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+  }
+  input[type='range']::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(128,128,128,0.3);
+  }
+  input[type='range']::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: currentColor;
+    margin-top: -5px;
   }
 }
 

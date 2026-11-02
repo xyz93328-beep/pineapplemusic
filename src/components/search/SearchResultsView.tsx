@@ -21,9 +21,10 @@ function TrackRow({ track, index, allTracks }: { track: Track; index: number; al
   return (
     <li
       onDoubleClick={() => playQueue(allTracks, index)}
+      onClick={() => playQueue(allTracks, index)}
       className={cn(
-        'group flex cursor-default select-none items-center gap-3 rounded-[10px] px-3 py-2',
-        'transition-colors duration-150 hover:bg-label/[0.05]',
+        'group flex cursor-pointer select-none items-center gap-3 rounded-[10px] px-3 py-2',
+        'transition-colors duration-150 active:bg-label/10 hover:bg-label/[0.05]',
         isActive && 'bg-accent/10',
       )}
     >

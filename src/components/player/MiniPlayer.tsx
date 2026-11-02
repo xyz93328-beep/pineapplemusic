@@ -69,23 +69,42 @@ export function MiniPlayer() {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 80, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        className="fixed bottom-[calc(env(safe-area-inset-bottom)+60px)] left-1/2 z-40 w-[calc(100%-1.5rem)] max-w-2xl -translate-x-1/2 md:bottom-5"
+        className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+64px)] left-1/2 z-40 w-[calc(100%-1rem)] max-w-2xl -translate-x-1/2 md:bottom-5 md:w-[calc(100%-2.5rem)]"
       >
         <div className="glass rounded-2xl px-4 py-3">
           {/* ── Mobile layout ── */}
           <div className="flex items-center gap-3 md:hidden">
-            <button onClick={() => setShowNowPlaying(true)} aria-label="Open Now Playing" className="shrink-0">
-              <Artwork src={currentTrack.thumbnailUrl} alt={currentTrack.title} className="h-10 w-10 rounded-art" />
+            <button
+              onClick={() => setShowNowPlaying(true)}
+              aria-label="Open Now Playing"
+              className="shrink-0 active:opacity-70"
+            >
+              <Artwork src={currentTrack.thumbnailUrl} alt={currentTrack.title} className="h-11 w-11 rounded-art" />
             </button>
-            <div className="min-w-0 flex-1" onClick={() => setShowNowPlaying(true)}>
+            {/* Title area — tap to open Now Playing */}
+            <button
+              onClick={() => setShowNowPlaying(true)}
+              className="min-w-0 flex-1 text-left"
+            >
               <p className="truncate text-track font-semibold text-label">{currentTrack.title}</p>
               <p className="truncate text-caption text-label-secondary">{currentTrack.artist}</p>
-            </div>
-            <button onClick={togglePlay} aria-label={isPlaying ? 'Pause' : 'Play'} className="shrink-0 text-label">
-              {isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" />}
             </button>
-            <button onClick={next} aria-label="Next" className="shrink-0 text-label-secondary">
-              <SkipForward size={20} fill="currentColor" />
+            {/* Controls */}
+            <button
+              onClick={togglePlay}
+              aria-label={isPlaying ? 'Pause' : 'Play'}
+              className="shrink-0 p-2 text-label active:opacity-70"
+            >
+              {isPlaying
+                ? <Pause size={24} fill="currentColor" />
+                : <Play size={24} fill="currentColor" />}
+            </button>
+            <button
+              onClick={next}
+              aria-label="Next"
+              className="shrink-0 p-2 text-label-secondary active:opacity-70"
+            >
+              <SkipForward size={22} fill="currentColor" />
             </button>
           </div>
 

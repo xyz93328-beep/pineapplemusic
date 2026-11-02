@@ -79,7 +79,7 @@ export function PlaylistPage() {
         <Artwork
           src={playlist.thumbnailUrl}
           alt={playlist.title}
-          className="h-52 w-52 shrink-0 rounded-art-lg shadow-[0_8px_32px_rgba(0,0,0,0.3)]"
+          className="w-full max-w-[220px] self-center rounded-art-lg shadow-[0_8px_32px_rgba(0,0,0,0.3)] sm:h-52 sm:w-52 sm:self-auto"
         />
         <div className="flex flex-col gap-2">
           <p className="text-caption font-semibold uppercase tracking-widest text-label-secondary">Playlist</p>

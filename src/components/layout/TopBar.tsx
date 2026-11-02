@@ -8,8 +8,9 @@ export function TopBar() {
   const navigate = useNavigate();
 
   return (
-    <header className="flex shrink-0 items-center gap-3 px-4 py-3 md:px-6">
-      <div className="flex w-[68px] shrink-0 items-center gap-1">
+    <header className="flex shrink-0 items-center gap-2 px-3 py-2 md:gap-3 md:px-6 md:py-3">
+      {/* Back/forward — desktop only */}
+      <div className="hidden w-[68px] shrink-0 items-center gap-1 md:flex">
         <IconButton label="Go back" onClick={() => navigate(-1)}>
           <ChevronLeft size={18} strokeWidth={2.25} aria-hidden />
         </IconButton>
@@ -18,9 +19,11 @@ export function TopBar() {
         </IconButton>
       </div>
 
-      <SearchField className="mx-auto w-full max-w-[460px]" />
+      {/* Search — full width on mobile, capped on desktop */}
+      <SearchField className="flex-1 md:mx-auto md:max-w-[460px]" />
 
-      <div className="flex w-[68px] shrink-0 justify-end">
+      {/* Theme toggle */}
+      <div className="shrink-0 md:w-[68px] md:flex md:justify-end">
         <ThemeToggle />
       </div>
     </header>

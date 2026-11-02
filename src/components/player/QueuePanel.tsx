@@ -16,11 +16,26 @@ export function QueuePanel() {
   return (
     <AnimatePresence>
       {show && (
-        <motion.aside key="queue"
-          initial={{ x: '100%', opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: '100%', opacity: 0 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="glass fixed bottom-0 right-0 top-0 z-30 flex w-80 flex-col overflow-hidden"
-          aria-label="Queue">
+        <>
+          {/* Backdrop on mobile */}
+          <motion.div
+            key="queue-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShow(false)}
+            style={{ zIndex: 29 }}
+            className="fixed inset-0 bg-black/40 md:hidden"
+          />
+          <motion.aside
+            key="queue"
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="glass fixed bottom-0 right-0 top-0 z-30 flex w-full flex-col overflow-hidden md:w-80"
+            aria-label="Queue"
+          >
           <div className="flex items-center justify-between border-b border-separator px-5 py-4">
             <h2 className="text-body font-bold text-label">Queue</h2>
             <button onClick={() => setShow(false)} aria-label="Close queue" className="rounded-full p-1 text-label-secondary hover:text-label">
@@ -50,7 +65,8 @@ export function QueuePanel() {
               <p className="pt-8 text-center text-caption text-label-secondary">Nothing up next</p>
             )}
           </div>
-        </motion.aside>
+          </motion.aside>
+        </>
       )}
     </AnimatePresence>
   );
